@@ -5,11 +5,12 @@ from bs4 import BeautifulSoup
 k__id = lambda text:re.search("var k__id = \"([0-9a-zA-Z]{1,})\"",text).group(1)
 k_data_id = lambda text:re.search("data\-id\=\"(.*?)\"", text).group(1)
 class video:
-    def __init__(self, format, reso, v__id, size, k_data) -> None:
+    def __init__(self, format, reso, v__id, size, k_data, thumbnail) -> None:
         self.format = format
         self.reso = reso
         self.v_id = v__id
         self.size = size
+        self.thumbnail = thumbnail
         self.k_data_id = k_data
     @property
     def get_json(self):
@@ -37,7 +38,7 @@ def videos(url):
     req = Session()
     res=req.post("https://www.y2mate.com/mates/en68/analyze/ajax", data={"url": url,"q_auto": 0,"ajax": 1})
     id_ = k__id(res.json()["result"])
-    return [ video(y,z,id_,x, k_data_id(res.json()["result"])) for x, y, z in re.findall("\>([0-9]{1,}.?[0-9]? MB).*?data-ftype=\"(.*?)\" data-fquality\=\"(.*?)\"", res.json()["result"])]
+    return [ video(y,z,id_,x, k_data_id(res.json()["result"]),re.search("\<img src\=\"(.*?)\"", res.json()["result"]).group(1)) for x, y, z in re.findall("\>([0-9]{1,}.?[0-9]? MB).*?data-ftype=\"(.*?)\" data-fquality\=\"(.*?)\"", res.json()["result"])]
 def mp3(url):
     req=Session()
     if (res:=req.post("https://www.y2mate.com/mates/mp3/ajax",data={'url': url, 'q_auto': 1, 'ajax': 1}).json()).get("status") == 'success':
